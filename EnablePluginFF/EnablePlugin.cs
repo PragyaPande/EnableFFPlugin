@@ -1,0 +1,145 @@
+﻿//#define EXCEPTION 
+//To throw exceptions
+#define PROC 
+//To use 2 different functions
+//#define TEST
+//For testing
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+namespace EnablePluginFF
+{
+
+    public class EnablePlugin
+    {
+       string className = "MozillaWindowClass";
+       string windowName = "Mozilla Firefox";
+       string FFpathExe = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe ";
+       string addonURL = " about:addons ";
+       public IntPtr getHandle()
+        {
+            
+            List<IntPtr> handles;
+#if (!PROC)
+            {
+                handles = WindowHandle.SearchForWindow(className);
+            }
+#else
+            {
+                handles = WindowHandle.SearchForWindow(className, windowName);
+            }
+#endif
+
+            Console.WriteLine("The number of Handles found : " + handles.Count);
+
+            /* Start Firefox and return the handle of this newly started firefox
+            */
+            if (handles.Count == 0)
+                return startFF();
+
+            /* There is only 1 instance, so just return the Handle*/
+            else if (handles.Count == 1)
+                return handles.ElementAt(0);
+
+            else //(handles.Count > 1)
+            {
+                //Handle this condition and make sure we are selecting firefox
+                IntPtr h = getFFHandle(handles);
+
+                //If we still did not get Firefox Start it after checking the Caption
+                if (h == IntPtr.Zero)
+                    return startFF();
+                else
+                    return h;
+            }
+
+        }
+
+        //Checking that we are selecting firefox by using title, as well - the caption of FF web pages contains Mozilla Firefox
+       [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+       static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+       private IntPtr getFFHandle(List<IntPtr> handles)
+       {
+           int i = 0;
+           IntPtr h = IntPtr.Zero;
+           foreach(IntPtr handle in handles)
+           {
+               StringBuilder sb = new StringBuilder(1024);
+               GetWindowText(handle, sb, sb.Capacity);
+               Console.WriteLine("The Caption of handle {0} is {1}", handle, sb.ToString());
+               if (sb.ToString().Contains(windowName))
+               {
+                   h = handle;
+                   i++;
+               }
+           }
+           if (i > 1)
+           {
+               Console.WriteLine("There are still more than 1 instances of firefox handle, we are selecting the last instance");
+           }
+           return h;
+       }//end getFFHandle from a list of handles
+
+
+        //Start FireFox and open the addons web page
+        //Reference : http://stackoverflow.com/questions/2494451/how-to-obtain-firefox-newly-created-window-handler
+        private IntPtr startFF()
+        {
+            IntPtr hwnd = IntPtr.Zero;
+#if(TEST)
+            FFpathExe = "C:\\Program Files (x86)\\Mozilla Firefox\\firefo.exe";
+#endif
+            
+            System.Diagnostics.Process browserProc = new System.Diagnostics.Process();
+            browserProc.StartInfo.FileName = FFpathExe;
+            browserProc.StartInfo.Arguments = addonURL;
+            
+            try
+            {
+                browserProc.Start();
+            }
+            catch (System.ComponentModel.Win32Exception ex)
+            {
+                Console.WriteLine("FF is not installed at the specified location or it is not installed in the system.");
+                Console.WriteLine(ex.Message);
+                return IntPtr.Zero;
+                
+#if(EXCEPTION)
+                {
+                    throw ex;
+                }
+#endif
+            }//end catch
+            do
+            {
+                Thread.Sleep(100);
+                browserProc.Refresh();
+            } while (browserProc.MainWindowHandle == IntPtr.Zero && !browserProc.HasExited);
+
+            if (!browserProc.HasExited)
+                hwnd = browserProc.MainWindowHandle;
+            return hwnd;
+        }// end startFF
+
+        //For closing the FireFox Window
+        //Reference : http://www.codeproject.com/Articles/22257/Find-and-Close-the-Window-using-Win-API
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(int hWnd, uint Msg, int wParam, int lParam);
+
+        public const int WM_SYSCOMMAND = 0x0112;
+        public const int SC_CLOSE = 0xF060;
+
+        public bool closeWindow(IntPtr handle)
+        {
+            // close the window using API    
+            int iHandle = handle.ToInt32();
+            SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
+            return false;
+        }//end closeWindow
+    }
+}
