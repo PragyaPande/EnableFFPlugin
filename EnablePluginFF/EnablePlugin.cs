@@ -17,8 +17,11 @@ namespace EnablePluginFF
 
     public class EnablePlugin
     {
+        //Class and WindowName for firefox
         string className = "MozillaWindowClass";
         string windowName = "Mozilla Firefox";
+
+        //boolean variable which is set to true if firefox exists
         bool FirfoxExists = false;
         string FFpathExe;
         string addonURL = " about:addons ";
@@ -30,16 +33,17 @@ namespace EnablePluginFF
             string finalPathName, InstallLocation;
 
             RegistryKey finalPath;
+
             //path where registry is
             string initPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
             //Opening Registery
             RegistryKey theKeyHKLMFFE = Registry.LocalMachine.OpenSubKey(initPath);
-            //Getting all key names
+
+            //Getting all Registry Subkey names
             string[] pathVals = theKeyHKLMFFE.GetSubKeyNames();
+
             //Closing Registry
             theKeyHKLMFFE.Close();
-
-            //boolean variable which is set to true if firefox exists
 
             InstallLocation = "Not Installed";
 
