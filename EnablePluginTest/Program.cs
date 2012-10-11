@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace EnablePluginTest
 {
-    
+
     class Program
     {
 
@@ -25,8 +25,20 @@ namespace EnablePluginTest
 
         static void Main(string[] args)
         {
+            //To Test this, set function getFFExepath() in EnablePlugin.cs to public
+            //testFFinstallation();
+
             testGetHandle();
 
+        }
+
+        //Function to test the function which finds the FF installation folder
+        private static void testFFinstallation()
+        {
+            EnablePlugin obj = new EnablePlugin();
+            //To Test this, set function getFFExepath() in EnablePlugin.cs to public and uncomment the below line
+            //obj.getFFExepath();
+            Console.ReadLine();
         }
 
         static void actualalgo()
@@ -41,7 +53,9 @@ namespace EnablePluginTest
             /// 5. if FF is not running and we are not able to run it(i.e. it is not installed), it throws an exception saying that FF not installed
             handle = obj.getHandle();
         }
-        static void testGetHandle(){
+        static void testGetHandle()
+        {
+
             EnablePlugin obj = new EnablePlugin();
 
             IntPtr handle;
@@ -49,7 +63,7 @@ namespace EnablePluginTest
             /*The actual algorithm is here.*/
 #if(!TEST)
             {
-                
+
                 handle = obj.getHandle();
 
                 /*This is to log if we get handle zero even after all the checks are done*/
