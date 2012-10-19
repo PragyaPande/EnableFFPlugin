@@ -65,6 +65,8 @@ namespace EnablePluginTest
             {
 
                 handle = obj.getHandle();
+                AccessibleCode acobj = new AccessibleCode(handle);
+                acobj.checkHandle();
 
                 /*This is to log if we get handle zero even after all the checks are done*/
                 //Console.WriteLine("The handle is : " + handle);
@@ -87,8 +89,11 @@ namespace EnablePluginTest
                     Console.WriteLine("Done");
                 }
 
-                SetWindowText(handle, "Found it ");
+# if(TEST)
+                //For testing whether we got the right handle
+                //SetWindowText(handle, "Found it ");
                 //obj.closeWindow(handle);
+#endif
             }
 #endif
 
@@ -107,6 +112,7 @@ namespace EnablePluginTest
 
 #endif
             Console.ReadLine();
+            //obj.closeWindow(handle);
         }
     }
 }
