@@ -108,6 +108,8 @@ namespace EnablePluginFF
             bool found = false;
             string pathforfile = "C:\\Users\\Pragya\\Documents\\Advanced Project - 524";
             List<AutomationElement> names = new List<AutomationElement>();
+            bool ourext = false;
+            const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
             try
             {
                 AutomationElement aeBrowser = AutomationElement.FromHandle(handle);
@@ -128,7 +130,12 @@ namespace EnablePluginFF
                     file.WriteLine("Native Window Handle : " + ae.Current.NativeWindowHandle);
                     file.WriteLine("Automation ID : " + ae.Current.AutomationId);
                     file.WriteLine("Item Type : " + ae.Current.ItemType);
-                    if (ae.Current.ControlType.ProgrammaticName == "ControlType.Button")
+                    if (ae.Current.Name.Contains(ext))
+                    {
+                        ourext = true;
+                    }
+                    file.WriteLine("Bool Variable : " + ourext);
+                    if (ae.Current.ControlType.ProgrammaticName == "ControlType.Button" && ourext == true && (ae.Current.Name == "Enable" || ae.Current.Name == "Disable"))
                     {
                         found = true;
                         if (ae.Current.Name == "Enable")
@@ -141,6 +148,7 @@ namespace EnablePluginFF
                         {
                             file.WriteLine("Already Enabled ");
                         }
+                        ourext = false;
                         //return true;
                     }
                     
@@ -148,8 +156,12 @@ namespace EnablePluginFF
                 if (found == false)
                 {
                     file.WriteLine("Could not find the extension");
-                    //return false;
+                   // return false;
                 }
+            }
+            catch (ElementNotAvailableException enax)
+            {
+                Console.WriteLine("Element not Available exception : " + enax.ToString());
             }
             finally
             {

@@ -232,11 +232,19 @@ namespace EnablePluginFF
                 {
                     throw ex;
                 }
-                Process FFprocess = null;
-                FFprocess = getFFProcess();
-                if (FFprocess != null)
-                    killFF(FFprocess);
-                return start_Firefox(tries+1,maxtries);
+                try
+                {
+                    Process FFprocess = null;
+                    FFprocess = getFFProcess();
+                    if (FFprocess != null)
+                        killFF(FFprocess);
+                    return start_Firefox(tries + 1, maxtries);
+                }
+                catch (System.InvalidOperationException e)
+                {
+                    Console.WriteLine("Could not start the Process" + e.ToString());
+                    return null;
+                }
             }
         }
 
