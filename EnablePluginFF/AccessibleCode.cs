@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using Accessibility;
 using System.Runtime.InteropServices;
-
+using System.Windows.Automation;
+using System.Windows.Forms;
 
 namespace EnablePluginFF
 {
@@ -14,6 +15,7 @@ namespace EnablePluginFF
         IAccessible iAccessible;//interface: Accessibility namespace
         private const int CHILDID_SELF = 0;
         private const int SELFLAG_TAKESELECTION = 0x2;
+        private bool add = true;
         //Obj ID
         internal enum OBJID : uint
         {
@@ -33,6 +35,7 @@ namespace EnablePluginFF
             SELFLAG_TAKEFOCUS = 0x01
         }
 
+       
         private string name()
         {
             return iAccessible.get_accName(0);
@@ -40,71 +43,206 @@ namespace EnablePluginFF
 
         private void getChild(IAccessible iAccessible,bool done)
         {
+            if (iAccessible == null)
+            {
+                Console.WriteLine(" The iAccessible object is null");
+                return;
+            }
             string accWindowName = iAccessible.get_accName(0);
             string accWindowVal = iAccessible.get_accValue(0);
-           /* if ((accWindowName!=null && !accWindowName.Contains("Add-ons Manager - Mozilla Firefox"))||(accWindowVal!=null && !accWindowVal.Contains("Add-ons Manager - Mozilla Firefox")))
-                return ;*/
-
-            /*if ((accWindowName != null && !accWindowName.Contains("Mozilla Firefox Start Page - Mozilla Firefox")) || (accWindowVal != null && !accWindowVal.Contains("Mozilla Firefox Start Page - Mozilla Firefox")))
-                return;*/
 
             IAccessible[] childs = new IAccessible[iAccessible.accChildCount];
 
             int obtained = 0;
 
             AccessibleChildren(iAccessible, 0, iAccessible.accChildCount - 1, childs, out obtained);
-
+            int i = 0;
             foreach (IAccessible child in childs)
             {
                 if (child != null && child.GetType().IsCOMObject)
                 {
-                    //Console.Write("Printing the children : ");
-                    string cname = ((IAccessible)child).get_accName(0);
-                    string cvalue = ((IAccessible)child).get_accValue(0);
+                    Console.WriteLine("The value of i : " + i);
+                    i++;
+                    if (child == null)
+                    {
+                        Console.WriteLine("Child is NULL");
+                        continue;
+                    }
+                    string cname = child.get_accName(0);
+                    string cvalue = child.get_accValue(0);
+                    string cdesc = child.get_accDescription(0);
+                    int crole = child.get_accRole(0);
+                    
 
-                    if(cname != null && cname.Trim() != "")
+                    if (cname != null && cname.Trim() != "")
                         Console.WriteLine("Name is : " + cname);
+                    else
+                        Console.WriteLine("Name is : null");
                     if (cvalue != null && cvalue.Trim() != "")
                         Console.WriteLine("Value is : " + cvalue);
-                    if (cname != null && cname.Contains("Add-ons Manager - Mozilla Firefox"))
+                    else
+                        Console.WriteLine("Value is : null");
+
+                    if (cdesc != null && cdesc.Trim() != "")
+                        Console.WriteLine("Description is : " + cdesc);
+                    else
+                        Console.WriteLine("Description is : null");
+                    if (crole != null)
+                        Console.WriteLine("Role is : " + crole);
+                    else
+                        Console.WriteLine("Role is : null");
+                    if (cname!=null && cname.Contains("Firebug"))
                     {
-                        codeforAddon(child);
+                        Console.WriteLine("Firebug");
+
                     }
-                    getChild(((IAccessible) child),true);
+                    getChild(child,true);
                 }
                 
             }
         }
 
-        private void codeforAddon(IAccessible obj)
+        public bool doAccessibleHandle()
         {
-            if (obj == null)
-                return;
-            Console.WriteLine("Code for Addon");
-            IAccessible[] childs = new IAccessible[obj.accChildCount];
-
-            int obtained = 0;
-
-            AccessibleChildren(obj, 0, obj.accChildCount - 1, childs, out obtained);
-
-            foreach (IAccessible child in childs)
+            System.IO.StreamWriter file = null;
+            bool found = false;
+            string pathforfile = "C:\\Users\\Pragya\\Documents\\Advanced Project - 524";
+            List<AutomationElement> names = new List<AutomationElement>();
+            try
             {
-                if (child == null)
-                    continue;
-                string cname = ((IAccessible)child).get_accName(0);
-                string cvalue = ((IAccessible)child).get_accValue(0);
-                
-                string cdesc = child.get_accDescription(0);
+                AutomationElement aeBrowser = AutomationElement.FromHandle(handle);
+                Console.WriteLine("Browser Name : " + aeBrowser.Current.Name);
+                /* string getURL = this.GetURLfromFirefox(aeBrowser);
+                 Console.WriteLine("The URL we got" + getURL);*/
+              
+                WalkEnabledElements(aeBrowser, names);
+                file = new System.IO.StreamWriter(pathforfile + "\\test.txt");
+                foreach (AutomationElement ae in names)
+                {
+                    file.WriteLine();
+                    file.WriteLine("Name : " + ae.Current.Name);
+                    file.WriteLine("Type : " + ae.Current.AutomationId);
+                    file.WriteLine("Class Name : " + ae.Current.ClassName);
+                    file.WriteLine("Control Type Name : " + ae.Current.ControlType.ProgrammaticName);
+                    file.WriteLine("Is Enabled : " + ae.Current.IsEnabled);
+                    file.WriteLine("Native Window Handle : " + ae.Current.NativeWindowHandle);
+                    file.WriteLine("Automation ID : " + ae.Current.AutomationId);
+                    file.WriteLine("Item Type : " + ae.Current.ItemType);
+                    if (ae.Current.ControlType.ProgrammaticName == "ControlType.Button")
+                    {
+                        found = true;
+                        if (ae.Current.Name == "Enable")
+                        {
+                            if (InvokeControl(ae) == true)
+                                file.WriteLine(" Enabling the extension");
 
-                if (cname != null && cname.Trim() != "")
-                    Console.WriteLine("Name is : " + cname);
-                if (cvalue != null && cvalue.Trim() != "")
-                    Console.WriteLine("Value is : " + cvalue);
-                if (cdesc != null && cdesc.Trim() != "")
-                    Console.WriteLine("Value is : " + cdesc);
+                        }
+                        else
+                        {
+                            file.WriteLine("Already Enabled ");
+                        }
+                        //return true;
+                    }
+                    
+                }
+                if (found == false)
+                {
+                    file.WriteLine("Could not find the extension");
+                    //return false;
+                }
             }
-            Console.WriteLine("Addon Done");
+            finally
+            {
+                file.Close();
+            }
+            return false;
+        }
 
+        ///-------------------------------------------------------------------- 
+        /// <summary> 
+        /// Obtains an InvokePattern control pattern from a control 
+        /// and calls the InvokePattern.Invoke() method on the control. 
+        /// </summary> 
+        /// <param name="targetControl">
+        /// The control of interest. 
+        /// </param> 
+        ///-------------------------------------------------------------------- 
+        private bool InvokeControl(AutomationElement targetControl)
+        {
+            Console.WriteLine("In Invoke Control");
+            InvokePattern invokePattern = null;
+
+            try
+            {
+                invokePattern =
+                    targetControl.GetCurrentPattern(InvokePattern.Pattern)
+                    as InvokePattern;
+            }
+            catch (ElementNotEnabledException)
+            {
+                // Object is not enabled 
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                // object doesn't support the InvokePattern control pattern 
+                return false;
+            }
+
+            invokePattern.Invoke();
+            return true;
+        }
+        /// <summary> 
+        /// Walks the UI Automation tree and adds the control type of each enabled control  
+        /// element it finds to a TreeView. 
+        /// </summary> 
+        /// <param name="rootElement">The root of the search on this iteration.</param>
+        /// <param name="treeNode">The node in the TreeView for this iteration.</param>
+        /// <remarks> 
+        /// This is a recursive function that maps out the structure of the subtree beginning at the 
+        /// UI Automation element passed in as rootElement on the first call. This could be, for example, 
+        /// an application window. 
+        /// CAUTION: Do not pass in AutomationElement.RootElement. Attempting to map out the entire subtree of 
+        /// the desktop could take a very long time and even lead to a stack overflow. 
+        /// </remarks> 
+        private void WalkEnabledElements(AutomationElement rootElement, List<AutomationElement> elementName)
+        {
+            
+            Condition condition1 = new PropertyCondition(AutomationElement.IsControlElementProperty, true);
+            Condition condition2 = new PropertyCondition(AutomationElement.IsEnabledProperty, true);
+            TreeWalker walker = new TreeWalker(new AndCondition(condition1, condition2));
+            AutomationElement elementNode = walker.GetFirstChild(rootElement);
+            while (elementNode != null)
+            {
+                
+                if (add == true)
+                {
+
+                    elementName.Add(elementNode);
+                }
+                if (elementNode.Current.Name.Contains("XTalk "))
+                    add = true;
+                WalkEnabledElements(elementNode, elementName);
+                if (elementNode.Current.Name.Contains("XTalk "))
+                    add = true;
+                elementNode = walker.GetNextSibling(elementNode);
+                
+            }
+        }
+
+
+        public string GetURLfromFirefox(AutomationElement rootElement)
+        {
+            Condition condition1 = new PropertyCondition(AutomationElement.IsContentElementProperty, true);
+            TreeWalker walker = new TreeWalker(condition1);
+            AutomationElement elementNode = walker.GetFirstChild(rootElement);
+            
+
+            if (elementNode != null)
+            {
+                Console.WriteLine(elementNode.Current.Name);
+            }
+            return "null";
         }
         public bool checkHandle()
         {
@@ -114,42 +252,26 @@ namespace EnablePluginFF
             object obj = null;
             int retVal = AccessibleObjectFromWindow(handle, (uint)OBJID.WINDOW, ref guid, ref obj);
             iAccessible = (IAccessible)obj;
-
+            
             //The AccWindowName returned is Add-ons Manager - Mozilla Firefox
             //There is a special child id called CHILDID_SELF (this constant equals 0) that, when used with a function like get_accChild, returns the element itself rather than a child.
 
             string accWindowName = iAccessible.get_accName(0);
             string accWindowVal = iAccessible.get_accValue(0);
+            
             Console.WriteLine("IAccessible Name : " + accWindowName);
             Console.WriteLine("IAccessible value : " + accWindowVal);
+            Console.WriteLine("IAccessible Role is : " + iAccessible.get_accRole(0));
 
-            /*//For TitleBar
-            Object[] childs = new Object[iAccessible.accChildCount];
-            
-            int obtained = 0;
-
-            AccessibleChildren(iAccessible, 0, iAccessible.accChildCount - 1, childs, out obtained);
-            
-            
-            for (int i = 0; i < obtained; i++)
-            {
-                Console.WriteLine(iAccessible.get_accName(i + 1));
-                
-            }
-             if(!accWindowVal.Contains("Add-ons Manager - Mozilla Firefox"))
-                return false;
-             */
-            //End of for TitleBar
-            //For Window
-            /*if (!accWindowName.Contains("Add-ons Manager - Mozilla Firefox"))
-                return false;*/
-            Console.WriteLine(iAccessible.GetType());
-            Console.WriteLine("Focus is: " + iAccessible.accFocus);
-            Console.WriteLine("Selection is " + iAccessible.get_accState());
+            Console.WriteLine("IAccessible Type: " + iAccessible.GetType());
+            Console.WriteLine("IAccessible Focus is: " + iAccessible.accFocus);
+            Console.WriteLine("IAccessible Selection is " + iAccessible.get_accState());
             //iAccessible.accSelect((int)OBJID.SELFLAG_TAKEFOCUS, 0);
             if (!accWindowName.Contains("Mozilla Firefox"))
                 return false;
+
             getChild(iAccessible,false);
+
             //End of for window
             Console.WriteLine("End of checkHandle");
             iAccessible = null;

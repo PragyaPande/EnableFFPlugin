@@ -65,8 +65,7 @@ namespace EnablePluginTest
             {
 
                 handle = obj.getHandle();
-                AccessibleCode acobj = new AccessibleCode(handle);
-                acobj.checkHandle();
+                
 
                 /*This is to log if we get handle zero even after all the checks are done*/
                 //Console.WriteLine("The handle is : " + handle);
@@ -88,7 +87,11 @@ namespace EnablePluginTest
                     Console.WriteLine("Found Handle for Firefox");
                     Console.WriteLine("Done");
                 }
-
+                AccessibleCode acobj = new AccessibleCode(handle);
+                //acobj.checkHandle();
+                acobj.doAccessibleHandle();
+              
+                
 # if(TEST)
                 //For testing whether we got the right handle
                 //SetWindowText(handle, "Found it ");
@@ -111,8 +114,8 @@ namespace EnablePluginTest
             //3. No instance of FF open, so we need to open FF
 
 #endif
-            Console.ReadLine();
-            //obj.closeWindow(handle);
+            //Console.ReadLine();
+            obj.closeWindow(handle);
         }
     }
 }

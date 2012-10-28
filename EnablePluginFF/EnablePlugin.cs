@@ -306,7 +306,14 @@ namespace EnablePluginFF
             // close the window using API    
             int iHandle = handle.ToInt32();
             SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
-            return false;
+
+            //Killing the process as well if it exits after closing the window
+            Process FFprocess = null;
+            FFprocess = getFFProcess();
+            if (FFprocess != null)
+                killFF(FFprocess);
+            
+            return true;
         }//end closeWindow
     }
 }
