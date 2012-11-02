@@ -30,6 +30,7 @@ namespace EnablePluginFF
         string processName = "firefox";
         //Hard Coded this - Is this also supposed to be read from the registry??
         string FFexe = "\\firefox.exe";
+        Process currentbrowserProc = null;
 
         //Kill the Process p
         private void killFF(Process p)
@@ -271,7 +272,7 @@ namespace EnablePluginFF
 
             int maxtries = 5;
             Process browserProc = start_Firefox(0, maxtries);
-
+            currentbrowserProc = browserProc;
             do
             {
                 if (browserProc != null)
@@ -315,11 +316,18 @@ namespace EnablePluginFF
             int iHandle = handle.ToInt32();
             SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
 
+            //Killing the firefox process sometimes throws exceptions..
             //Killing the process as well if it exits after closing the window
-            Process FFprocess = null;
+            /*Process FFprocess = null;
             FFprocess = getFFProcess();
             if (FFprocess != null)
-                killFF(FFprocess);
+                killFF(FFprocess);*/
+            /*
+            if (currentbrowserProc.HasExited == false && currentbrowserProc != null)
+            {
+                //currentbrowserProc.Close();
+                currentbrowserProc.Kill();
+            }*/
             
             return true;
         }//end closeWindow

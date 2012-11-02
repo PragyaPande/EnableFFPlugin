@@ -102,14 +102,16 @@ namespace EnablePluginFF
             }
         }
 
-        public bool doAccessibleHandle()
+        public bool doAccessibleHandle(string ext)
         {
             System.IO.StreamWriter file = null;
             bool found = false;
             string pathforfile = "C:\\Users\\Pragya\\Documents\\Advanced Project - 524";
             List<AutomationElement> names = new List<AutomationElement>();
             bool ourext = false;
-            const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
+            //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
+            //const string ext = "DOM Inspector";
+            
             try
             {
                 AutomationElement aeBrowser = AutomationElement.FromHandle(handle);

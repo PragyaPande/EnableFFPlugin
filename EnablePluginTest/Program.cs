@@ -88,8 +88,10 @@ namespace EnablePluginTest
                     Console.WriteLine("Done");
                 }
                 AccessibleCode acobj = new AccessibleCode(handle);
-                //acobj.checkHandle();
-                acobj.doAccessibleHandle();
+                acobj.checkHandle();
+                //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
+                //const string ext = "XTalk";
+                //acobj.doAccessibleHandle(ext);
               
                 
 # if(TEST)
