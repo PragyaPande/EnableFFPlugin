@@ -15,45 +15,45 @@ namespace EnablePluginTest
     class Program
     {
 
-        static void startProcess(string processExe)
-        {
-            System.Diagnostics.Process.Start(processExe);
-        }
-
+       
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, String lpString);
 
         static void Main(string[] args)
         {
-            //To Test this, set function getFFExepath() in EnablePlugin.cs to public
-            //testFFinstallation();
+            if (args.Length < 2)
+            {
+                Console.WriteLine(" The Program should be run as program Name Extension name logfilepath");
+                
+            }
+            else
+            {
 
-            testGetHandle();
+                string extension = args[0];
+                string logfile = args[1];
+                //To Test this, set function getFFExepath() in EnablePlugin.cs to public
+                //testFFinstallation();
+
+                testGetHandle(extension, logfile);
+            }
 
         }
+
+
 
         //Function to test the function which finds the FF installation folder
         private static void testFFinstallation()
         {
             EnablePlugin obj = new EnablePlugin();
+
             //To Test this, set function getFFExepath() in EnablePlugin.cs to public and uncomment the below line
             //obj.getFFExepath();
+
             Console.ReadLine();
         }
 
-        static void actualalgo()
-        {
-            EnablePlugin obj = new EnablePlugin();
-            IntPtr handle;
-            ///Get the handle for FF : getHandle() function
-            /// 1. If there is no instance of FF running on the system, it runs FF and returns the handle of that instance.
-            /// 2. If there are more than 1 instance of FF running on the system, then it returns the handle of the last FF which is iterated by Enumwindows
-            /// 3. If there is firefox Browser and Thunderbird both running, then it returns the handle of FF
-            /// 4. if there are more than 1 instance of FF browser and Thunderbird running, then it returns the FF of the last FF which is iterated by Enumwindows
-            /// 5. if FF is not running and we are not able to run it(i.e. it is not installed), it throws an exception saying that FF not installed
-            handle = obj.getHandle();
-        }
-        static void testGetHandle()
+        //This functions has the Actual Algorithm 
+        private static void testGetHandle(string extension, string logfile)
         {
 
             EnablePlugin obj = new EnablePlugin();
@@ -63,7 +63,12 @@ namespace EnablePluginTest
             /*The actual algorithm is here.*/
 #if(!TEST)
             {
-
+                ///Get the handle for FF : getHandle() function
+                /// 1. If there is no instance of FF running on the system, it runs FF and returns the handle of that instance.
+                /// 2. If there are more than 1 instance of FF running on the system, then it returns the handle of the last FF which is iterated by Enumwindows
+                /// 3. If there is firefox Browser and Thunderbird both running, then it returns the handle of FF
+                /// 4. if there are more than 1 instance of FF browser and Thunderbird running, then it returns the FF of the last FF which is iterated by Enumwindows
+                /// 5. if FF is not running and we are not able to run it(i.e. it is not installed), it throws an exception saying that FF not installed
                 handle = obj.getHandle();
                 
 
@@ -88,10 +93,12 @@ namespace EnablePluginTest
                     Console.WriteLine("Done");
                 }
                 AccessibleCode acobj = new AccessibleCode(handle);
-                acobj.checkHandle();
-                //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
+
+                //SET THE EXTENSION NAME HERE, now we are setting it through the command line
+                //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay"
+               
                 //const string ext = "XTalk";
-                //acobj.doAccessibleHandle(ext);
+                acobj.doAccessibleHandle(extension,logfile);
               
                 
 # if(TEST)
@@ -116,7 +123,7 @@ namespace EnablePluginTest
             //3. No instance of FF open, so we need to open FF
 
 #endif
-            //Console.ReadLine();
+            //Close the window
             obj.closeWindow(handle);
         }
     }

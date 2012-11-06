@@ -25,11 +25,18 @@ namespace EnablePluginFF
 
         //boolean variable which is set to true if firefox exists
         bool FirfoxExists = false;
+        //String to store the FF exe path
         string FFpathExe;
+        //The addon URL
         string addonURL = " about:addons ";
+
+        //String to store the process Name
         string processName = "firefox";
+
         //Hard Coded this - Is this also supposed to be read from the registry??
         string FFexe = "\\firefox.exe";
+
+        //Stores the current Browser Process
         Process currentbrowserProc = null;
 
         //Kill the Process p
@@ -37,6 +44,7 @@ namespace EnablePluginFF
         {
             p.Kill();
         }
+
         //Get The FireFox Process 
         private Process getFFProcess()
         {
@@ -53,7 +61,7 @@ namespace EnablePluginFF
             return null;
         }
         
-        //Get the FF exe Path
+        //Get the FF exe Path from the registry
         //Reference : http://www.codeproject.com/Articles/27672/Programmatically-detecting-browser-cache-size-for
         private void getFFExepath()
         {
@@ -110,6 +118,7 @@ namespace EnablePluginFF
             
         }
 
+        //The public function which gets the firefox handle
         public IntPtr getHandle()
         {
 
@@ -147,7 +156,8 @@ namespace EnablePluginFF
                 //Handle this condition and make sure we are selecting firefox
                 IntPtr h = getFFHandle(handles);
 
-                //If we still did not get Firefox Start it after checking the Caption
+                //If we still did not get Firefox handle by searching through all the above handles.
+                //Start Firefox after checking the Caption
                 if (h == IntPtr.Zero)
                 {
                     Console.WriteLine("Did not Find Firefox among the handles");
@@ -166,6 +176,8 @@ namespace EnablePluginFF
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+        //Search through all the handles(this function is called when the no of handles is greater than 1) and find and return the firefox handle
+        // if no handle is firefox browser hadle, then return null
         private IntPtr getFFHandle(List<IntPtr> handles)
         {
             int i = 0;
@@ -229,12 +241,15 @@ namespace EnablePluginFF
             {
                 
                 Console.WriteLine(ex.Message);
+
+                //if the number of tries is greater than maxtries, then throw an exception
                 if (tries > maxtries)
                 {
                     throw ex;
                 }
                 try
                 {
+                    // if we still have tries remaining, get Firefox Process and Kill it and try to start_firefox again
                     Process FFprocess = null;
                     FFprocess = getFFProcess();
                     if (FFprocess != null)
@@ -257,19 +272,24 @@ namespace EnablePluginFF
             IntPtr hwnd = IntPtr.Zero;
             int reTries = 0;
 
-            //Parameter
+            //Parameter : Number of Retries
             int maxRetries = 5;
 #if(TEST)
+            //To Test, how is works if the Firefox path is incorrect
             FFpathExe = "C:\\Program Files (x86)\\Mozilla Firefox\\firefo.exe";
 #endif
+            //Get the Process
             Process FFprocess = null;
             FFprocess = getFFProcess();
+
+            //if Firefox process is already present kill it
             if (FFprocess != null)
                 killFF(FFprocess);
 
             //Call to this function sets the class variables FireFoxExists & FFPathExe if FF exists
             getFFExepath();
 
+            //This paramter is the number of times we try to start Firefox
             int maxtries = 5;
             Process browserProc = start_Firefox(0, maxtries);
             currentbrowserProc = browserProc;
@@ -291,7 +311,7 @@ namespace EnablePluginFF
                             FFprocess = getFFProcess();
                             if (FFprocess != null)
                                 killFF(FFprocess);
-                            browserProc = start_Firefox(0,maxtries);
+                            browserProc = start_Firefox(reTries+1, maxtries);
                         }
                     }
             } while (reTries < maxRetries ||( hwnd == IntPtr.Zero && !browserProc.HasExited));
@@ -314,21 +334,7 @@ namespace EnablePluginFF
         {
             // close the window using API    
             int iHandle = handle.ToInt32();
-            SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
-
-            //Killing the firefox process sometimes throws exceptions..
-            //Killing the process as well if it exits after closing the window
-            /*Process FFprocess = null;
-            FFprocess = getFFProcess();
-            if (FFprocess != null)
-                killFF(FFprocess);*/
-            /*
-            if (currentbrowserProc.HasExited == false && currentbrowserProc != null)
-            {
-                //currentbrowserProc.Close();
-                currentbrowserProc.Kill();
-            }*/
-            
+            SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);           
             return true;
         }//end closeWindow
     }

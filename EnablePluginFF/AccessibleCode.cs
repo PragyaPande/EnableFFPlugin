@@ -7,120 +7,42 @@ using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using System.Windows.Forms;
 
+//NOTE : Have removed all the IAccessible Code for now. Will put it in the other branch
 namespace EnablePluginFF
 {
     public class AccessibleCode
     {
+        //The handle of firefox : this is set by the callee function
         IntPtr handle;
-        IAccessible iAccessible;//interface: Accessibility namespace
-        private const int CHILDID_SELF = 0;
-        private const int SELFLAG_TAKESELECTION = 0x2;
-        private bool add = true;
-        //Obj ID
-        internal enum OBJID : uint
+
+        public bool add { get; set; }
+
+        public void doAccessibleHandle(string extension, string logfile)
         {
-            WINDOW = 0x00000000,
-            SYSMENU = 0xFFFFFFFF,
-            TITLEBAR = 0xFFFFFFFE,
-            MENU = 0xFFFFFFFD,
-            CLIENT = 0xFFFFFFFC,
-            VSCROLL = 0xFFFFFFFB,
-            HSCROLL = 0xFFFFFFFA,
-            SIZEGRIP = 0xFFFFFFF9,
-            CARET = 0xFFFFFFF8,
-            CURSOR = 0xFFFFFFF7,
-            ALERT = 0xFFFFFFF6,
-            SOUND = 0xFFFFFFF5,
-            CHILDID_SELF = 0,
-            SELFLAG_TAKEFOCUS = 0x01
-        }
-
-       
-        private string name()
-        {
-            return iAccessible.get_accName(0);
-        }
-
-        private void getChild(IAccessible iAccessible,bool done)
-        {
-            if (iAccessible == null)
-            {
-                Console.WriteLine(" The iAccessible object is null");
-                return;
-            }
-            string accWindowName = iAccessible.get_accName(0);
-            string accWindowVal = iAccessible.get_accValue(0);
-
-            IAccessible[] childs = new IAccessible[iAccessible.accChildCount];
-
-            int obtained = 0;
-
-            AccessibleChildren(iAccessible, 0, iAccessible.accChildCount - 1, childs, out obtained);
-            int i = 0;
-            foreach (IAccessible child in childs)
-            {
-                if (child != null && child.GetType().IsCOMObject)
-                {
-                    Console.WriteLine("The value of i : " + i);
-                    i++;
-                    if (child == null)
-                    {
-                        Console.WriteLine("Child is NULL");
-                        continue;
-                    }
-                    string cname = child.get_accName(0);
-                    string cvalue = child.get_accValue(0);
-                    string cdesc = child.get_accDescription(0);
-                    int crole = child.get_accRole(0);
-                    
-
-                    if (cname != null && cname.Trim() != "")
-                        Console.WriteLine("Name is : " + cname);
-                    else
-                        Console.WriteLine("Name is : null");
-                    if (cvalue != null && cvalue.Trim() != "")
-                        Console.WriteLine("Value is : " + cvalue);
-                    else
-                        Console.WriteLine("Value is : null");
-
-                    if (cdesc != null && cdesc.Trim() != "")
-                        Console.WriteLine("Description is : " + cdesc);
-                    else
-                        Console.WriteLine("Description is : null");
-                    if (crole != null)
-                        Console.WriteLine("Role is : " + crole);
-                    else
-                        Console.WriteLine("Role is : null");
-                    if (cname!=null && cname.Contains("Firebug"))
-                    {
-                        Console.WriteLine("Firebug");
-
-                    }
-                    getChild(child,true);
-                }
-                
-            }
-        }
-
-        public bool doAccessibleHandle(string ext)
-        {
+            //Stream writer to output to a log file
             System.IO.StreamWriter file = null;
             bool found = false;
-            string pathforfile = "C:\\Users\\Pragya\\Documents\\Advanced Project - 524";
+
+            //This varible stores the path to the log file - Please change it, Now this is not used but the logfile is taken from command line
+            //string pathforfile = "C:\\Users\\Pragya\\Documents\\Advanced Project - 524";
+
+            //This is a list of all the automation elements 
             List<AutomationElement> names = new List<AutomationElement>();
             bool ourext = false;
-            //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay";
-            //const string ext = "DOM Inspector";
             
             try
             {
+                //Gets the automation element of the browser
                 AutomationElement aeBrowser = AutomationElement.FromHandle(handle);
                 Console.WriteLine("Browser Name : " + aeBrowser.Current.Name);
                 /* string getURL = this.GetURLfromFirefox(aeBrowser);
                  Console.WriteLine("The URL we got" + getURL);*/
               
+                //This traverses all the automation elements
                 WalkEnabledElements(aeBrowser, names);
-                file = new System.IO.StreamWriter(pathforfile + "\\test.txt");
+
+
+                file = new System.IO.StreamWriter(logfile);
                 foreach (AutomationElement ae in names)
                 {
                     file.WriteLine();
@@ -132,33 +54,42 @@ namespace EnablePluginFF
                     file.WriteLine("Native Window Handle : " + ae.Current.NativeWindowHandle);
                     file.WriteLine("Automation ID : " + ae.Current.AutomationId);
                     file.WriteLine("Item Type : " + ae.Current.ItemType);
-                    if (ae.Current.Name.Contains(ext))
+
+                    // if the current automation element Name contains our extension Name, set the variable ourext to true;
+                    if (ae.Current.Name.Contains(extension))
                     {
                         ourext = true;
                     }
                     file.WriteLine("Bool Variable : " + ourext);
+
+                    //If the current Automation element type is a Button and we are traversing our extension and the button name is either Enable or Disable, we try to either 
+                    //enable it if it is currently disabled or do nothing if it enabled
                     if (ae.Current.ControlType.ProgrammaticName == "ControlType.Button" && ourext == true && (ae.Current.Name == "Enable" || ae.Current.Name == "Disable"))
                     {
                         found = true;
+                        //if the button name is enabled, it means that the button is right now disabled and we have to click on this button and enable it
                         if (ae.Current.Name == "Enable")
                         {
+                            //We call the InvokeControl(ae) function to click the button
                             if (InvokeControl(ae) == true)
-                                file.WriteLine(" Enabling the extension");
+                                file.WriteLine(" Enabled the extension");
 
                         }
                         else
                         {
+                            // if the button name is disabled, that means it is already enabled, so we do nothing
                             file.WriteLine("Already Enabled ");
                         }
+                        //So we have not enabled or disabled out extension, so we are done and we won't do anything now
                         ourext = false;
-                        //return true;
                     }
                     
                 }
+
+                //If we could not find out extension, after traversing the entire list of Automation elements, we just write a message in the  LOG
                 if (found == false)
                 {
                     file.WriteLine("Could not find the extension");
-                   // return false;
                 }
             }
             catch (ElementNotAvailableException enax)
@@ -169,7 +100,6 @@ namespace EnablePluginFF
             {
                 file.Close();
             }
-            return false;
         }
 
         ///-------------------------------------------------------------------- 
@@ -250,7 +180,7 @@ namespace EnablePluginFF
             Condition condition1 = new PropertyCondition(AutomationElement.IsContentElementProperty, true);
             TreeWalker walker = new TreeWalker(condition1);
             AutomationElement elementNode = walker.GetFirstChild(rootElement);
-            
+
 
             if (elementNode != null)
             {
@@ -258,55 +188,8 @@ namespace EnablePluginFF
             }
             return "null";
         }
-        public bool checkHandle()
-        {
-            
-           
-            Guid guid = new Guid("{618736E0-3C3D-11CF-810C-00AA00389B71}");
-            object obj = null;
-            int retVal = AccessibleObjectFromWindow(handle, (uint)OBJID.WINDOW, ref guid, ref obj);
-            iAccessible = (IAccessible)obj;
-            
-            //The AccWindowName returned is Add-ons Manager - Mozilla Firefox
-            //There is a special child id called CHILDID_SELF (this constant equals 0) that, when used with a function like get_accChild, returns the element itself rather than a child.
 
-            string accWindowName = iAccessible.get_accName(0);
-            string accWindowVal = iAccessible.get_accValue(0);
-            
-            Console.WriteLine("IAccessible Name : " + accWindowName);
-            Console.WriteLine("IAccessible value : " + accWindowVal);
-            Console.WriteLine("IAccessible Role is : " + iAccessible.get_accRole(0));
-
-            Console.WriteLine("IAccessible Type: " + iAccessible.GetType());
-            Console.WriteLine("IAccessible Focus is: " + iAccessible.accFocus);
-            Console.WriteLine("IAccessible Selection is " + iAccessible.get_accState());
-            //iAccessible.accSelect((int)OBJID.SELFLAG_TAKEFOCUS, 0);
-            if (!accWindowName.Contains("Mozilla Firefox"))
-                return false;
-
-            getChild(iAccessible,false);
-
-            //End of for window
-            Console.WriteLine("End of checkHandle");
-            iAccessible = null;
-            return false;
-        }
-
-        [DllImport("oleacc.dll")]
-        internal static extern int AccessibleObjectFromWindow(
-             IntPtr hwnd,
-             uint id,
-             ref Guid iid,
-             [In, Out, MarshalAs(UnmanagedType.IUnknown)] ref object ppvObject);
-
-        [DllImport("oleacc.dll")]
-        public static extern uint AccessibleChildren(IAccessible paccContainer, int iChildStart, int cChildren, [Out] object[] rgvarChildren, out int pcObtained);
-
-
-        public void getNavigator()
-        {
-        }
-
+        //Constructor to Set the Handle
         public AccessibleCode(IntPtr p_handle)
         {
             handle = p_handle;
