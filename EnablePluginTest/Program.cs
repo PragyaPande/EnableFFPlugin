@@ -88,8 +88,7 @@ namespace EnablePluginTest
                     Console.WriteLine("Done");
                 }
                 AccessibleCode acobj = new AccessibleCode(handle);
-                //acobj.checkHandle();
-                acobj.doAccessibleHandle();
+                acobj.checkHandle();
               
                 
 # if(TEST)
