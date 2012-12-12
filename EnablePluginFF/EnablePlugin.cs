@@ -25,8 +25,10 @@ namespace EnablePluginFF
 
         //boolean variable which is set to true if firefox exists
         bool FirfoxExists = false;
+        
         //String to store the FF exe path
         string FFpathExe;
+
         //The addon URL
         string addonURL = " about:addons ";
 
@@ -71,6 +73,7 @@ namespace EnablePluginFF
 
             //path where registry is
             string initPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+
             //Opening Registery
             RegistryKey theKeyHKLMFFE = Registry.LocalMachine.OpenSubKey(initPath);
 
@@ -148,7 +151,9 @@ namespace EnablePluginFF
             /* There is only 1 instance, so just return the Handle*/
             else if (handles.Count == 1)
             {
-                return handles.ElementAt(0);
+                Console.WriteLine("Close Fire Fox and then try again");
+                //return handles.ElementAt(0);
+                return IntPtr.Zero;
             }
 
             else //(handles.Count > 1)
@@ -166,7 +171,10 @@ namespace EnablePluginFF
                 else
                 {
                     Console.WriteLine("Found Firefox Handle Returning it !! ");
-                    return h;
+                    Console.WriteLine("Close Fire Fox and then try again");
+
+                    //return h;
+                    return IntPtr.Zero;
                 }
             }
 

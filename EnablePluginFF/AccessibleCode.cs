@@ -72,12 +72,16 @@ namespace EnablePluginFF
                         {
                             //We call the InvokeControl(ae) function to click the button
                             if (InvokeControl(ae) == true)
+                            {
+                                Console.WriteLine("Enabled the extension");
                                 file.WriteLine(" Enabled the extension");
+                            }
 
                         }
                         else
                         {
                             // if the button name is disabled, that means it is already enabled, so we do nothing
+                            Console.WriteLine("Already Enabled ");
                             file.WriteLine("Already Enabled ");
                         }
                         //So we have not enabled or disabled out extension, so we are done and we won't do anything now
