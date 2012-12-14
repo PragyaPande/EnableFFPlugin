@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using System.Windows.Forms;
 
-//NOTE : Have removed all the IAccessible Code for now. Will put it in the other branch
+//NOTE : Have removed all the IAccessible Code for now. Moved to a different GitHub Branch
 namespace EnablePluginFF
 {
     public class AccessibleCode
@@ -15,7 +15,6 @@ namespace EnablePluginFF
         //The handle of firefox : this is set by the callee function
         IntPtr handle;
 
-        public bool add { get; set; }
 
         public int doAccessibleHandle(string extension, string logfile)
         {
@@ -73,7 +72,7 @@ namespace EnablePluginFF
                             //We call the InvokeControl(ae) function to click the button
                             if (InvokeControl(ae) == true)
                             {
-                                Console.WriteLine("Extension " + extension + "Enabled the extension");
+                                Console.WriteLine("Extension " + extension + " Enabled");
                                 file.WriteLine("Extension " + extension + " Enabled the extension");
                                 return 3;
                             }
@@ -83,7 +82,7 @@ namespace EnablePluginFF
                         {
                             // if the button name is disabled, that means it is already enabled, so we do nothing
                             Console.WriteLine("Extension " + extension + " is Already Enabled ");
-                            file.WriteLine("Extension " + extension + "Already Enabled ");
+                            file.WriteLine("Extension " + extension + " Already Enabled ");
                             return 4;
                         }
                         //So we have not enabled or disabled out extension, so we are done and we won't do anything now
@@ -173,17 +172,10 @@ namespace EnablePluginFF
             while (elementNode != null)
             {
                 
-                if (add == true)
-                {
 
-                    elementName.Add(elementNode);
-                }
-                if (elementNode.Current.Name.Contains("XTalk "))
-                    add = true;
-                WalkEnabledElements(elementNode, elementName);
-                if (elementNode.Current.Name.Contains("XTalk "))
-                    add = true;
-                elementNode = walker.GetNextSibling(elementNode);
+               elementName.Add(elementNode);
+               WalkEnabledElements(elementNode, elementName);
+               elementNode = walker.GetNextSibling(elementNode);
                 
             }
         }

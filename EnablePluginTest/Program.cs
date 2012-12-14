@@ -6,7 +6,16 @@ using System.Text;
 using EnablePluginFF;
 using System.Runtime.InteropServices;
 
-
+/*
+ Tested :
+ 1. With both Mozilla Thunderbird and Seamonkey.
+ 2. When Firefox is open.
+ 3. When Firefox is closed.
+ 4. When the plug-in is enabled
+ 5. When the plug-in is disabled
+ 6. When the plug-in is not present/installed
+ 7. When the plug-in(extension) name given as parameter is not the complete name.
+ */
 
 namespace EnablePluginTest
 {
@@ -23,6 +32,7 @@ namespace EnablePluginTest
             if (args.Length < 2)
             {
                 Console.WriteLine(" The Program should be run as program Name Extension name logfilepath");
+                Console.WriteLine();
 
             }
             else
@@ -53,7 +63,7 @@ namespace EnablePluginTest
         }
 
         //This functions has the Actual Algorithm 
-        private static void testGetHandle(string extension, string logfile)
+        private static int testGetHandle(string extension, string logfile)
         {
 
             EnablePlugin obj = new EnablePlugin();
@@ -84,7 +94,8 @@ namespace EnablePluginTest
 
                     //Close the window
                     obj.closeWindow(handle);
-                    Console.WriteLine("Return Code : " + return_code); 
+                    Console.WriteLine("Return Code : " + return_code);
+                    return return_code;
                     //Console.WriteLine("Done");
 
                 }
@@ -92,6 +103,7 @@ namespace EnablePluginTest
                 {
 
                     Console.WriteLine("Try Again After Closing Firefox.");
+                    return 1;
                 }
             }
         }

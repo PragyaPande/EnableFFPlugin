@@ -142,8 +142,8 @@ namespace EnablePluginFF
             */
             
             
-            //If the handle count is 0 but there is a Firefox Process Running, then Kill the FireFox Process
-            // and then try to start it
+            /*If the handle count is 0 but there is a Firefox Process Running, then Kill the FireFox Process
+             and then try to start it*/
             if (handles.Count == 0)
             {
                 return startFF();
@@ -161,8 +161,8 @@ namespace EnablePluginFF
                 //Handle this condition and make sure we are selecting firefox
                 IntPtr h = getFFHandle(handles);
 
-                //If we still did not get Firefox handle by searching through all the above handles.
-                //Start Firefox after checking the Caption
+                /*If we still did not get Firefox handle by searching through all the above handles.
+                Start Firefox after checking the Caption*/
                 if (h == IntPtr.Zero)
                 {
                     Console.WriteLine("Did not Find Firefox among the handles");
