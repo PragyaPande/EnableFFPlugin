@@ -17,7 +17,7 @@ namespace EnablePluginFF
 
         public bool add { get; set; }
 
-        public void doAccessibleHandle(string extension, string logfile)
+        public int doAccessibleHandle(string extension, string logfile)
         {
             //Stream writer to output to a log file
             System.IO.StreamWriter file = null;
@@ -73,16 +73,18 @@ namespace EnablePluginFF
                             //We call the InvokeControl(ae) function to click the button
                             if (InvokeControl(ae) == true)
                             {
-                                Console.WriteLine("Enabled the extension");
-                                file.WriteLine(" Enabled the extension");
+                                Console.WriteLine("Extension " + extension + "Enabled the extension");
+                                file.WriteLine("Extension " + extension + " Enabled the extension");
+                                return 3;
                             }
 
                         }
                         else
                         {
                             // if the button name is disabled, that means it is already enabled, so we do nothing
-                            Console.WriteLine("Already Enabled ");
-                            file.WriteLine("Already Enabled ");
+                            Console.WriteLine("Extension " + extension + " is Already Enabled ");
+                            file.WriteLine("Extension " + extension + "Already Enabled ");
+                            return 4;
                         }
                         //So we have not enabled or disabled out extension, so we are done and we won't do anything now
                         ourext = false;
@@ -93,17 +95,20 @@ namespace EnablePluginFF
                 //If we could not find out extension, after traversing the entire list of Automation elements, we just write a message in the  LOG
                 if (found == false)
                 {
-                    file.WriteLine("Could not find the extension");
+                    file.WriteLine("Could not find the extension : " + extension);
+                    return 2;
                 }
             }
             catch (ElementNotAvailableException enax)
             {
                 Console.WriteLine("Element not Available exception : " + enax.ToString());
+                return 1;
             }
             finally
             {
                 file.Close();
             }
+            return 1;
         }
 
         ///-------------------------------------------------------------------- 
@@ -112,8 +117,12 @@ namespace EnablePluginFF
         /// and calls the InvokePattern.Invoke() method on the control. 
         /// </summary> 
         /// <param name="targetControl">
-        /// The control of interest. 
+        /// The control of interest. In our case this would be the button, we would click to
+        /// enable the extension
         /// </param> 
+        /// <remarks>
+        /// http://msdn.microsoft.com/en-us/library/system.windows.automation.invokepattern.invoke(v=VS.85).aspx
+        /// </remarks>
         ///-------------------------------------------------------------------- 
         private bool InvokeControl(AutomationElement targetControl)
         {
@@ -145,8 +154,9 @@ namespace EnablePluginFF
         /// element it finds to a TreeView. 
         /// </summary> 
         /// <param name="rootElement">The root of the search on this iteration.</param>
-        /// <param name="treeNode">The node in the TreeView for this iteration.</param>
+        /// <param name="List of Automation elements">This list stores all the automation elements.</param>
         /// <remarks> 
+        /// http://msdn.microsoft.com/en-us/library/ms752090.aspx?cs-save-lang=1&cs-lang=csharp#code-snippet-1
         /// This is a recursive function that maps out the structure of the subtree beginning at the 
         /// UI Automation element passed in as rootElement on the first call. This could be, for example, 
         /// an application window. 

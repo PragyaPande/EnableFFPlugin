@@ -80,11 +80,12 @@ namespace EnablePluginTest
                     //SET THE EXTENSION NAME HERE, now we are setting it through the command line
                     //const string ext = "XTalk 2.36 (disabled) An Extension for HearSay"
 
-                    acobj.doAccessibleHandle(extension, logfile);
+                    int return_code = acobj.doAccessibleHandle(extension, logfile);
 
                     //Close the window
                     obj.closeWindow(handle);
-                    Console.WriteLine("Done");
+                    Console.WriteLine("Return Code : " + return_code); 
+                    //Console.WriteLine("Done");
 
                 }
                 else
