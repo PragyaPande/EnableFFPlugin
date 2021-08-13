@@ -74,28 +74,33 @@ namespace EnablePluginFF
                     int crole = child.get_accRole(0);
                     
 
-                    if (cname != null && cname.Trim() != "")
-                        Console.WriteLine("Name is : " + cname);
-                    else
-                        Console.WriteLine("Name is : null");
-                    if (cvalue != null && cvalue.Trim() != "")
-                        Console.WriteLine("Value is : " + cvalue);
-                    else
-                        Console.WriteLine("Value is : null");
+                    if (cname != null)
+                    {
+                        if (cname.Trim() != "")
+                            Console.WriteLine("Name is : " + cname);
+                    } else Console.WriteLine("Name is : null");
+                    
+                    if (cvalue != null)
+                    {
+                        if (cvalue.Trim() != "")
+                            Console.WriteLine("Value is : " + cvalue);
+                    } else Console.WriteLine("Value is : null");
 
-                    if (cdesc != null && cdesc.Trim() != "")
-                        Console.WriteLine("Description is : " + cdesc);
-                    else
-                        Console.WriteLine("Description is : null");
+                    if (cdesc != null)
+                    {
+                        if (cdesc.Trim() != "")
+                            Console.WriteLine("Description is : " + cdesc);
+                    } else Console.WriteLine("Description is : null");
+                    
                     if (crole != null)
                         Console.WriteLine("Role is : " + crole);
                     else
                         Console.WriteLine("Role is : null");
-                    if (cname!=null && cname.Contains("Firebug"))
-                    {
-                        Console.WriteLine("Firebug");
-
-                    }
+                    
+                    if (cname!=null)
+                        if (cname.Contains("Firebug"))
+                            Console.WriteLine("Firebug");
+                    
                     getChild(child,true);
                 }
                 
